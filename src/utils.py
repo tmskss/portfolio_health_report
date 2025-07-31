@@ -91,7 +91,7 @@ def analyze_reports(reports: list) -> str:
 
     openai_client = OpenAI()
     response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages = [
                 {
                     "role": "system",

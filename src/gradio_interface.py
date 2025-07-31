@@ -90,6 +90,12 @@ with gr.Blocks() as demo:
     gr.Markdown("# Portfolio Health Report Generator")
     
     with gr.Row():
+        gr.Markdown(
+            """Upload your email files to generate a portfolio health report.
+            You also need to upload a `Colleagues.txt` containing the characters found in the emails."""
+            )
+
+    with gr.Row():
         text_input = gr.Files(label="Upload Emails", file_types=["text"])
     
     with gr.Row():
