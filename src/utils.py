@@ -75,6 +75,14 @@ THREAD_OUTPUT_FORMAT = {
 }
 
 def analyze_reports(reports: list) -> str:
+    """Analyze project health reports and create a final project portfolio health report.
+
+    Args:
+        reports: list of project health reports
+
+    Returns:
+        str: A concise summary of the overall project health, including any potential risks, inconsistencies, and unresolved issues that need attention.
+    """
     system_prompt = """
     You are a helpful assistant that receives project health reports created by analyzing email threads. Your task is to analyze these reports and provide a concise summary of the overall project health, including any potential risks, inconsistencies, and unresolved issues that need attention. This summary should help a Director of Engineering understand the current state of the project and any potential problems. It should also help the Director of Engineering to prioritize issues that need attention. Different email threads could be talking about the same project. There is a 'Project' field in the report. Only decide that threads are about the same project if there is a match in names. The threads could be about different projects, so you should not assume that they are all about the same project unless the 'Project' field matches up to a certain degree.
     """
@@ -98,7 +106,7 @@ def analyze_reports(reports: list) -> str:
 
     return response.choices[0].message.content
 
-def analyze_emails_with_llm(emails: dict) -> dict:
+def analyze_emails_with_llm(emails: dict, colleagues_content: str) -> dict:
     """
     Analyze a list of emails with an OpenAI LLM.
 
@@ -117,25 +125,7 @@ def analyze_emails_with_llm(emails: dict) -> dict:
         Here is the content of the emails:\n
         {combined_emails}\n\n
 
-        Here are the people involved in the emails:\n
-        Project Manager (PM): Péter Kovács (kovacs.peter@kisjozsitech.hu)
-        Business Analyst (BA): Zsuzsa Varga (varga.zsuzsa@kisjozsitech.hu)
-        Senior Developer: István Nagy (nagy.istvan@kisjozsitech.hu)
-        Frontend Developer: Anna Kiss (kiss.anna@kisjozsitech.hu)
-        Junior Developer: Gábor Horváth (horvath.gabor@kisjozsitech.hu)
-        Account Manager (AM): Eszter Szabó (szabo.eszter@kisjozsitech.hu)
-        Project Manager (PM): Gábor Nagy (gabor.nagy@kisjozsitech.hu)
-        Business Analyst (BA): Eszter Varga (eszter.varga@kisjozsitech.hu)
-        Developer 1 (Senior): Péter Kovács (peter.kovacs@kisjozsitech.hu)
-        Developer 2 (Medior): Bence Tóth (bence.toth@kisjozsitech.hu)
-        Developer 3 (Junior): Anna Horváth (anna.horvath@kisjozsitech.hu)
-        Account Manager (AM): Zoltán Kiss (zoltan.kiss@kisjozsitech.hu)
-        Project Manager (PM): Péter Kovács (peter.kovacs@kisjozsitech.hu)
-        Business Analyst (BA): Anna Nagy (anna.nagy@kisjozsitech.hu)
-        Developer 1 (Backend): Gábor Kiss (gabor.kiss@kisjozsitech.hu)
-        Developer 2 (Frontend): Bence Szabó (bence.szabó@kisjozsitech.hu)
-        Developer 3 (Full-stack): Zsófia Varga (zsofia.varga@kisjozsitech.hu)
-        Client Relationship Manager: Eszter Horváth (eszter.horvath@kisjozsitech.hu)
+        Here are the people involved in the emails:\n{colleagues_content}\n\n
         """
     )
     
@@ -157,7 +147,20 @@ def analyze_emails_with_llm(emails: dict) -> dict:
 
     return json.loads(response.choices[0].message.content)
 
-def parse_email(content):
+def parse_email(content: str) -> tuple:
+    """
+    Parse an email given as a string and return a tuple containing the metadata
+    (from, to, date, subject) and the body of the email.
+
+    The email body is extracted by either finding the first empty line after the subject
+    line or by taking everything after the subject line if no empty line exists.
+
+    Args:
+        content (str): The email content as a string
+
+    Returns:
+        tuple: A tuple containing the metadata (from, to, date, subject) and the body of the email
+    """
     metadata = {}
     
     # Extract metadata
@@ -183,8 +186,22 @@ def parse_email(content):
     
     return metadata, body
 
-def parse_multiple_emails(file_content: str, email_file: str):
+def parse_multiple_emails(file_content: str, email_file: str) -> list:
     # Files either start with "From" or "Subject", so we determine the split string accordingly
+    """
+    Parse a file containing multiple emails and return a list of tuples containing the metadata and body of each email.
+
+    The file is split into individual emails based on whether the file starts with "From" or "Subject".
+    The extracted metadata includes from, to, date, subject, and the email file the email was found in.
+    The email body is extracted by either finding the first empty line after the subject line or by taking everything after the subject line if no empty line exists.
+
+    Args:
+        file_content (str): The content of the file as a string
+        email_file (str): The name of the file the email was found in
+
+    Returns:
+        list: A list of tuples containing the metadata and body of each email
+    """
     split_string = "From" if file_content.startswith("From") else "Subject"
 
     emails = file_content.strip().split("\n\n"+split_string+": ")
