@@ -112,6 +112,7 @@ def analyze_emails_with_llm(emails: dict, colleagues_content: str) -> dict:
 
     Args:
         emails: List of emails to analyze.
+        colleagues_content: Content of the Colleagues.txt file containing the characters found in the emails.
 
     Returns:
         A dictionary containing a concise report of the analysis,
@@ -187,7 +188,6 @@ def parse_email(content: str) -> tuple:
     return metadata, body
 
 def parse_multiple_emails(file_content: str, email_file: str) -> list:
-    # Files either start with "From" or "Subject", so we determine the split string accordingly
     """
     Parse a file containing multiple emails and return a list of tuples containing the metadata and body of each email.
 
@@ -202,8 +202,10 @@ def parse_multiple_emails(file_content: str, email_file: str) -> list:
     Returns:
         list: A list of tuples containing the metadata and body of each email
     """
+    # Files either start with "From" or "Subject", so we determine the split string accordingly
     split_string = "From" if file_content.startswith("From") else "Subject"
 
+    # Split thread into separate emails
     emails = file_content.strip().split("\n\n"+split_string+": ")
     parsed_emails = []
     

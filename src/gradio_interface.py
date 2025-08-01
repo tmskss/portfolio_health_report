@@ -39,7 +39,7 @@ def process_files(files: list) -> Generator[Any, Any, Any]:
     # Save uploaded files to the temp directory
     file_paths = []
     for file_tuple in files:
-        # Gallery component returns a tuple with the file path as the first element
+        # Gradio Files component returns a tuple with the file path as the first element
         file_path = file_tuple
         if isinstance(file_tuple, tuple):
             file_path = file_tuple[0]  # Extract the file path from the tuple
@@ -59,14 +59,10 @@ def process_files(files: list) -> Generator[Any, Any, Any]:
     try:
         yield "Files uploaded. Waiting for AI to create report. This may take a few minutes..."
         
-        # Send the directory path to your Flask endpoint
+        # Send the directory path to the Flask endpoint
         response = requests.post(
             "http://backend:5001/analyze"
         )
-        
-        # Print debug information
-        print(f"Status code: {response.status_code}")
-        print(f"Response text: {response.text}")
         
         # Clean up temporary files after processing
         for path in file_paths:
@@ -87,7 +83,7 @@ def process_files(files: list) -> Generator[Any, Any, Any]:
 
 # Create Gradio interface
 with gr.Blocks() as demo:
-    gr.Markdown("# Portfolio Health Report Generator")
+    gr.Markdown("# Project Portfolio Health Report Generator")
     
     with gr.Row():
         gr.Markdown(
